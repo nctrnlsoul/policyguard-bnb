@@ -63,6 +63,12 @@ export default defineConfig({
       type: "http",
       url: "http://127.0.0.1:8545",
     },
+    bscTestnet: {
+      type: "http",
+      url: "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
+      chainId: 97,
+      accounts: [deployerPrivateKey],
+    },
     hardhat: {
       type: "edr-simulated",
       forking: {
