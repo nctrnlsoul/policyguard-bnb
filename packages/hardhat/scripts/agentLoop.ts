@@ -16,6 +16,7 @@
  *   npx tsx packages/hardhat/scripts/agentLoop.ts
  */
 
+import "dotenv/config";
 import { createPublicClient, createWalletClient, http, parseEther, formatEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { hardhat } from "viem/chains";
@@ -25,13 +26,17 @@ import { hardhat } from "viem/chains";
 // ---------------------------------------------------------------------------
 const RPC = "http://127.0.0.1:8545";
 
-// PolicyGuard address from this session's deploy.
-// If you restart `yarn chain` and redeploy, update this to the new address.
-const POLICY_GUARD = "0x5fbdb2315678afecb367f032d93f642f64180aa3" as const;
+if (!process.env.LOCAL_DEPLOYER_PK || !process.env.POLICY_GUARD_ADDRESS) {
+  console.error("Missing env vars: set LOCAL_DEPLOYER_PK and POLICY_GUARD_ADDRESS (see packages/hardhat/.env)");
+  process.exit(1);
+}
 
-// Hardhat account #0 private key — PUBLIC, well-known test key.
-// LOCAL CHAIN ONLY. Never use this on a real network; bots drain it instantly.
-const OWNER_PK = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as const;
+// PolicyGuard address from this session's deploy.
+// If you restart `yarn chain` and redeploy, update POLICY_GUARD_ADDRESS in .env.
+const POLICY_GUARD = process.env.POLICY_GUARD_ADDRESS as `0x${string}`;
+
+// Operator/owner private key. LOCAL CHAIN ONLY — never reuse a real key here.
+const OWNER_PK = process.env.LOCAL_DEPLOYER_PK as `0x${string}`;
 
 // Demo targets
 const VENDOR = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as const; // Hardhat acct #1, will be allow-listed

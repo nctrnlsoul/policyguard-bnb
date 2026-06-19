@@ -2,13 +2,19 @@
  * One-off: unpause PolicyGuard from the operator (owner) account on the local chain.
  *   npx tsx packages/hardhat/scripts/unpausePolicyGuard.ts
  */
+import "dotenv/config";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { hardhat } from "viem/chains";
 
+if (!process.env.LOCAL_DEPLOYER_PK || !process.env.POLICY_GUARD_ADDRESS) {
+  console.error("Missing env vars: set LOCAL_DEPLOYER_PK and POLICY_GUARD_ADDRESS (see packages/hardhat/.env)");
+  process.exit(1);
+}
+
 const RPC = "http://127.0.0.1:8545";
-const POLICY_GUARD = "0x5fbdb2315678afecb367f032d93f642f64180aa3" as const;
-const OWNER_PK = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as const;
+const POLICY_GUARD = process.env.POLICY_GUARD_ADDRESS as `0x${string}`;
+const OWNER_PK = process.env.LOCAL_DEPLOYER_PK as `0x${string}`;
 
 const ABI = [
   { type: "function", name: "paused", stateMutability: "view", inputs: [], outputs: [{ type: "bool" }] },
