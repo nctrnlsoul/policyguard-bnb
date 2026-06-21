@@ -1,5 +1,5 @@
 /**
- * agentLoop.ts — the PolicyGuard agent loop (local proving version)
+ * agentLoop.ts — the PolicyGuard agent loop (BSC testnet)
  *
  * What it does:
  *   1. The operator configures policy once (allow-list a vendor address).
@@ -12,34 +12,40 @@
  * layer (an LLM turning natural language into a proposed action) is a thin
  * swap on top of this once the mechanism is proven.
  *
- * Run against the LOCAL chain only. Make sure `yarn chain` is running.
+ * Runs against BSC testnet via the dRPC endpoint. The operator wallet is the
+ * encrypted deployer keystore (the contract owner), decrypted at startup the
+ * same way `yarn deploy` does. Set DEPLOYER_PASSWORD to skip the prompt.
  *   npx tsx packages/hardhat/scripts/agentLoop.ts
  */
 
 import "dotenv/config";
 import { createPublicClient, createWalletClient, http, parseEther, formatEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { hardhat } from "viem/chains";
+import { bscTestnet } from "viem/chains";
+import { Wallet } from "ethers";
+import password from "@inquirer/password";
 
 // ---------------------------------------------------------------------------
-// CONFIG (local chain)
+// CONFIG (BSC testnet)
 // ---------------------------------------------------------------------------
-const RPC = "http://127.0.0.1:8545";
-
-if (!process.env.LOCAL_DEPLOYER_PK || !process.env.POLICY_GUARD_ADDRESS) {
-  console.error("Missing env vars: set LOCAL_DEPLOYER_PK and POLICY_GUARD_ADDRESS (see packages/hardhat/.env)");
+if (
+  !process.env.BSC_TESTNET_RPC_URL ||
+  !process.env.POLICY_GUARD_ADDRESS ||
+  !process.env.DEPLOYER_PRIVATE_KEY_ENCRYPTED
+) {
+  console.error(
+    "Missing env vars: set BSC_TESTNET_RPC_URL, POLICY_GUARD_ADDRESS, and DEPLOYER_PRIVATE_KEY_ENCRYPTED (see packages/hardhat/.env)",
+  );
   process.exit(1);
 }
 
-// PolicyGuard address from this session's deploy.
-// If you restart `yarn chain` and redeploy, update POLICY_GUARD_ADDRESS in .env.
+const RPC = process.env.BSC_TESTNET_RPC_URL;
+
+// PolicyGuard address on BSC testnet (from .env).
 const POLICY_GUARD = process.env.POLICY_GUARD_ADDRESS as `0x${string}`;
 
-// Operator/owner private key. LOCAL CHAIN ONLY — never reuse a real key here.
-const OWNER_PK = process.env.LOCAL_DEPLOYER_PK as `0x${string}`;
-
 // Demo targets
-const VENDOR = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as const; // Hardhat acct #1, will be allow-listed
+const VENDOR = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as const; // will be allow-listed
 const UNKNOWN = "0x000000000000000000000000000000000000dEaD" as const; // never allow-listed
 
 // ---------------------------------------------------------------------------
@@ -116,16 +122,21 @@ const ABI = [
 type Proposal = { label: string; target: `0x${string}`; value: bigint; data: `0x${string}` };
 
 const proposals: Proposal[] = [
-  { label: "Pay 0.5 BNB to approved vendor", target: VENDOR, value: parseEther("0.5"), data: "0x" },
+  { label: "Pay 0.02 BNB to approved vendor", target: VENDOR, value: parseEther("0.02"), data: "0x" },
   { label: "Pay 2 BNB to approved vendor (over cap)", target: VENDOR, value: parseEther("2"), data: "0x" },
   { label: "Pay 0.1 BNB to an unknown address", target: UNKNOWN, value: parseEther("0.1"), data: "0x" },
 ];
 
 // ---------------------------------------------------------------------------
 async function main() {
-  const account = privateKeyToAccount(OWNER_PK);
-  const publicClient = createPublicClient({ chain: hardhat, transport: http(RPC) });
-  const walletClient = createWalletClient({ account, chain: hardhat, transport: http(RPC) });
+  // Decrypt the deployer keystore (the contract owner) to operate the loop.
+  const pass =
+    process.env.DEPLOYER_PASSWORD ?? (await password({ message: "Enter password to decrypt deployer key:" }));
+  const wallet = await Wallet.fromEncryptedJson(process.env.DEPLOYER_PRIVATE_KEY_ENCRYPTED as string, pass);
+  const account = privateKeyToAccount(wallet.privateKey as `0x${string}`);
+
+  const publicClient = createPublicClient({ chain: bscTestnet, transport: http(RPC) });
+  const walletClient = createWalletClient({ account, chain: bscTestnet, transport: http(RPC) });
 
   const read = <T extends string>(functionName: T, args: readonly unknown[] = []) =>
     publicClient.readContract({
@@ -196,7 +207,7 @@ async function main() {
 
   console.log("-".repeat(64));
   const vendorAfter = await publicClient.getBalance({ address: VENDOR });
-  console.log("Vendor balance moved:", formatEther(vendorAfter - vendorBefore), "BNB (expect 0.5)");
+  console.log("Vendor balance moved:", formatEther(vendorAfter - vendorBefore), "BNB (expect 0.02)");
 }
 
 main().catch(err => {

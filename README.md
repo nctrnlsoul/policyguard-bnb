@@ -1,83 +1,120 @@
-# 🏗 Scaffold-ETH 2
+# PolicyGuard
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+**On-chain guardrails for autonomous agents on BNB Chain.** An AI agent can propose any transaction it wants, but it can only ever execute the ones an on-chain policy contract allows. Non-compliant actions are caught before they are ever broadcast.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+Live and verified on BSC testnet. Built for the BNB AI Hack.
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+---
 
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
+## The problem
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+Autonomous agents that hold a wallet are powerful and dangerous in the same breath. The moment an agent can sign transactions, a bad prompt, a hallucination, or a compromised step can move funds it should never touch. Most "agent safety" lives off-chain, in the agent's own code, which is exactly the layer you cannot trust once the agent misbehaves.
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+PolicyGuard moves the guardrail on-chain, where the agent cannot route around it.
 
-## Requirements
+## The approach
 
-Before you begin, you need to install the following tools:
+A single Solidity contract holds the policy. Every action the agent takes routes through one `execute` function, and that function checks the policy on-chain and reverts if any rule fails. The agent also gets a read-only `check` function so it can verify an action before spending gas on it. The result is a clean separation: the agent proposes, the chain decides.
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+Three rules are enforced on-chain:
 
-## Quickstart
+- **Allow-list.** Funds can only move to approved addresses. Everything is denied by default.
+- **Spend cap.** No single action can exceed the on-chain limit.
+- **Pause.** A single owner-controlled kill switch halts all execution instantly.
 
-To get started with Scaffold-ETH 2, follow the steps below:
+All policy controls (`setAllowed`, `setSpendCap`, `setPaused`, `execute`) are owner-only, so the agent operates strictly inside a boundary the operator sets.
 
-1. Install dependencies if it was skipped in CLI:
+## Live on BSC testnet (the proof)
+
+Everything below is on-chain and verifiable. The contract source is readable on BscScan.
+
+| | |
+|---|---|
+| **Contract** | [`0x1862d321953a4b0e2f3b87028a930f12f320e9c8`](https://testnet.bscscan.com/address/0x1862d321953a4b0e2f3b87028a930f12f320e9c8) (verified) |
+| **Network** | BSC testnet (chainId 97) |
+| **Deploy tx** | [`0xd3aafe18...41bb19`](https://testnet.bscscan.com/tx/0xd3aafe1839df81577cf668076a0acb31163e0d219f2f1c8be63dd2964741bb19) |
+| **Compliant execute tx** | [`0xc5387926...b38e09`](https://testnet.bscscan.com/tx/0xc5387926de110f8922f04326c41015df67051bc053b116523070d41ec4b38e09) |
+
+The deploy, a policy-set transaction, and a compliant execution are all successful on-chain, clearing the hackathon's two-transaction requirement with margin.
+
+## How it works
 
 ```
-cd my-dapp-example
+  Agent proposes an action
+            |
+            v
+   check(target, value)   <-- on-chain, read-only, free
+            |
+     compliant? ----no----> denied, never broadcast
+            |
+           yes
+            |
+            v
+  execute(target, value, data)   <-- on-chain enforcement
+            |
+   allow-list + spend cap + pause re-checked, reverts if any fail
+            |
+            v
+      action settles on-chain
+```
+
+The key property: a denied action is filtered by `check` before it is ever sent, so it costs nothing and never touches the chain. The on-chain re-check inside `execute` means even a buggy or adversarial agent that skips `check` still cannot get a non-compliant action through.
+
+### Contract interface
+
+| Function | Access | Purpose |
+|---|---|---|
+| `check(target, value)` | view | Pre-flight verdict: returns whether an action would pass, and the reason if not. |
+| `execute(target, value, data)` | owner | Runs an action only if it passes allow-list, spend cap, and pause. Emits `Executed`. |
+| `setAllowed(target, bool)` | owner | Add or remove an address from the allow-list. |
+| `setSpendCap(amount)` | owner | Set the maximum value per action. |
+| `setPaused(bool)` | owner | Global kill switch. |
+
+## Demo: the agent loop in action
+
+The included agent loop proposes a batch of actions and only executes the compliant ones. Verified output from a live testnet run:
+
+```
+EXECUTED   Pay 0.02 BNB to approved vendor     -> success (allow-listed, within cap)
+DENIED     Pay 2 BNB (over cap)                -> "exceeds spend cap"      (caught pre-flight, never broadcast)
+DENIED     Pay 0.1 BNB to unknown address      -> "target not on allow-list" (caught pre-flight, never broadcast)
+```
+
+One action settled on-chain. Two were stopped before they could ever be sent.
+
+## Tech stack
+
+- **Contract:** Solidity (`^0.8.20`), one focused `PolicyGuard.sol`.
+- **Chain:** BNB Smart Chain testnet (chainId 97).
+- **Framework:** Scaffold-ETH 2 (Next.js, Wagmi, Viem, Hardhat).
+- **Agent loop:** TypeScript with viem, standalone and chain-agnostic.
+
+The agent loop talks to the contract through a standard EVM interface, so the same guardrail works for any agent or framework that can call a contract, not just this one.
+
+## Run it yourself
+
+```bash
+# 1. Install
 yarn install
+
+# 2. Configure (never commit secrets)
+cp packages/hardhat/.env.example packages/hardhat/.env
+# fill in your RPC URL and deployer key in the .env file
+
+# 3. Deploy PolicyGuard to BSC testnet
+yarn deploy --network bscTestnet
+
+# 4. Run the agent loop against your deployed contract
+cd packages/hardhat
+npx tsx scripts/agentLoop.ts
 ```
 
-2. Run a local network in the first terminal:
+All secrets (RPC endpoint, deployer key) live in a gitignored `.env`. The deployer key is stored as an encrypted keystore, never as plaintext.
 
-```
-yarn chain
-```
+## Roadmap
 
-This command starts a local Ethereum network using Hardhat. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/hardhat/hardhat.config.ts`.
+The current build proves the core: an agent constrained by an on-chain policy it cannot escape. The natural next layer is a natural-language proposer, a thin LLM front end that turns plain English into a proposed action and feeds it into the same `check` and `execute` loop. Because the guardrail is on-chain, the proposer can be swapped or upgraded freely without ever weakening the safety boundary.
 
-3. On a second terminal, deploy the test contract:
+## License
 
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/hardhat/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/hardhat/deploy` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
-```
-
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
-
-Run smart contract test with `yarn hardhat:test`
-
-- Edit your smart contracts in `packages/hardhat/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/hardhat/deploy`
-
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+MIT. Open source and free to use.

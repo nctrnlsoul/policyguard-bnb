@@ -65,7 +65,7 @@ export default defineConfig({
     },
     bscTestnet: {
       type: "http",
-      url: "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
+      url: process.env.BSC_TESTNET_RPC_URL || "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
       chainId: 97,
       accounts: [deployerPrivateKey],
     },
