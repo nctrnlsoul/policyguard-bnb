@@ -1,0 +1,425 @@
+{
+  "address": "0x1862d321953a4b0e2f3b87028a930f12f320e9c8",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_spendCap",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "NotOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Reentrant",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "Executed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnerUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "paused",
+          "type": "bool"
+        }
+      ],
+      "name": "PausedSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "cap",
+          "type": "uint256"
+        }
+      ],
+      "name": "SpendCapSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "allowed",
+          "type": "bool"
+        }
+      ],
+      "name": "TargetSet",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "allowed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "check",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "ok",
+          "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "execute",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "result",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "ok",
+          "type": "bool"
+        }
+      ],
+      "name": "setAllowed",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bool",
+          "name": "p",
+          "type": "bool"
+        }
+      ],
+      "name": "setPaused",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "cap",
+          "type": "uint256"
+        }
+      ],
+      "name": "setSpendCap",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "spendCap",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "contractName": "PolicyGuard",
+  "sourceName": "contracts/PolicyGuard.sol",
+  "bytecode": "0x608060405260016003553480156013575f5ffd5b50604051610a5c380380610a5c83398101604081905260309160a8565b5f80546001600160a01b031916339081178255600183905560405190917f4ffd725fc4a22075e9ec71c59edf9c38cdeb588a91b24fc5b61388c5be41282b91a26040518181527f2c6c01fa295301ed5268e857f846d705c9bd6266d24f9b323552e53a00fc91df9060200160405180910390a15060be565b5f6020828403121560b7575f5ffd5b5051919050565b610991806100cb5f395ff3fe608060405260043610610092575f3560e01c80638da5cb5b116100575780638da5cb5b1461015357806396fb721714610189578063b61d27f6146101b6578063d63a8e11146101d6578063f2fde38b14610204575f5ffd5b806316c38b3c1461009d5780631bf3cc5d146100be5780634697f05d146100dd5780635c975abb146100fc5780637addc73514610130575f5ffd5b3661009957005b5f5ffd5b3480156100a8575f5ffd5b506100bc6100b7366004610773565b610223565b005b3480156100c9575f5ffd5b506100bc6100d8366004610793565b6102a4565b3480156100e8575f5ffd5b506100bc6100f73660046107c0565b610303565b348015610107575f5ffd5b505f5461011b90600160a01b900460ff1681565b60405190151581526020015b60405180910390f35b34801561013b575f5ffd5b5061014560015481565b604051908152602001610127565b34801561015e575f5ffd5b505f54610171906001600160a01b031681565b6040516001600160a01b039091168152602001610127565b348015610194575f5ffd5b506101a86101a33660046107f1565b61038b565b604051610127929190610847565b6101c96101c4366004610869565b610473565b60405161012791906108ec565b3480156101e1575f5ffd5b5061011b6101f03660046108fe565b60026020525f908152604090205460ff1681565b34801561020f575f5ffd5b506100bc61021e3660046108fe565b6106ee565b5f546001600160a01b0316331461024d576040516330cd747160e01b815260040160405180910390fd5b5f8054821515600160a01b0260ff60a01b199091161790556040517f40db37ff5c0bdc2c427fbb2078c8f24afea940abac0e3c23bb4ea3bf2da2b2129061029990831515815260200190565b60405180910390a150565b5f546001600160a01b031633146102ce576040516330cd747160e01b815260040160405180910390fd5b60018190556040518181527f2c6c01fa295301ed5268e857f846d705c9bd6266d24f9b323552e53a00fc91df90602001610299565b5f546001600160a01b0316331461032d576040516330cd747160e01b815260040160405180910390fd5b6001600160a01b0382165f81815260026020908152604091829020805460ff191685151590811790915591519182527fd79dab7c1ad9be25388690df227462ca1accba2033dbdbd3011ff0eb30c25088910160405180910390a25050565b5f8054606090600160a01b900460ff16156103c65750506040805180820190915260068152651c185d5cd95960d21b60208201525f9061046c565b6001600160a01b0384165f9081526002602052604090205460ff1661041d5750506040805180820190915260188152771d185c99d95d081b9bdd081bdb88185b1b1bddcb5b1a5cdd60421b60208201525f9061046c565b600154831115610458575050604080518082019091526011815270065786365656473207370656e642063617607c1b60208201525f9061046c565b505060408051602081019091525f81526001905b9250929050565b5f546060906001600160a01b031633146104a0576040516330cd747160e01b815260040160405180910390fd5b6003546001146104c35760405163769dd35360e11b815260040160405180910390fd5b60026003555f54600160a01b900460ff161561050f5760405162461bcd60e51b81526020600482015260066024820152651c185d5cd95960d21b60448201526064015b60405180910390fd5b6001600160a01b0385165f9081526002602052604090205460ff166105715760405162461bcd60e51b81526020600482015260186024820152771d185c99d95d081b9bdd081bdb88185b1b1bddcb5b1a5cdd60421b6044820152606401610506565b6001548411156105b75760405162461bcd60e51b8152602060048201526011602482015270065786365656473207370656e642063617607c1b6044820152606401610506565b8334146105f75760405162461bcd60e51b815260206004820152600e60248201526d0ecc2d8eaca40dad2e6dac2e8c6d60931b6044820152606401610506565b5f5f866001600160a01b0316868686604051610614929190610917565b5f6040518083038185875af1925050503d805f811461064e576040519150601f19603f3d011682016040523d82523d5f602084013e610653565b606091505b50915091508161069a5760405162461bcd60e51b81526020600482015260126024820152711d185c99d95d0818d85b1b0819985a5b195960721b6044820152606401610506565b866001600160a01b03167fcaf938de11c367272220bfd1d2baa99ca46665e7bc4d85f00adb51b90fe1fa9f8787876040516106d793929190610926565b60405180910390a260016003559695505050505050565b5f546001600160a01b03163314610718576040516330cd747160e01b815260040160405180910390fd5b5f80546001600160a01b0319166001600160a01b038316908117825560405190917f4ffd725fc4a22075e9ec71c59edf9c38cdeb588a91b24fc5b61388c5be41282b91a250565b8035801515811461076e575f5ffd5b919050565b5f60208284031215610783575f5ffd5b61078c8261075f565b9392505050565b5f602082840312156107a3575f5ffd5b5035919050565b80356001600160a01b038116811461076e575f5ffd5b5f5f604083850312156107d1575f5ffd5b6107da836107aa565b91506107e86020840161075f565b90509250929050565b5f5f60408385031215610802575f5ffd5b61080b836107aa565b946020939093013593505050565b5f81518084528060208401602086015e5f602082860101526020601f19601f83011685010191505092915050565b8215158152604060208201525f6108616040830184610819565b949350505050565b5f5f5f5f6060858703121561087c575f5ffd5b610885856107aa565b935060208501359250604085013567ffffffffffffffff8111156108a7575f5ffd5b8501601f810187136108b7575f5ffd5b803567ffffffffffffffff8111156108cd575f5ffd5b8760208284010111156108de575f5ffd5b949793965060200194505050565b602081525f61078c6020830184610819565b5f6020828403121561090e575f5ffd5b61078c826107aa565b818382375f9101908152919050565b83815260406020820152816040820152818360608301375f818301606090810191909152601f909201601f191601019291505056fea2646970667358221220134518021f03b8750434f083a6b1cbfe088f9270efddbbee4316b7d4e9d92bc264736f6c634300081e0033",
+  "deployedBytecode": "0x608060405260043610610092575f3560e01c80638da5cb5b116100575780638da5cb5b1461015357806396fb721714610189578063b61d27f6146101b6578063d63a8e11146101d6578063f2fde38b14610204575f5ffd5b806316c38b3c1461009d5780631bf3cc5d146100be5780634697f05d146100dd5780635c975abb146100fc5780637addc73514610130575f5ffd5b3661009957005b5f5ffd5b3480156100a8575f5ffd5b506100bc6100b7366004610773565b610223565b005b3480156100c9575f5ffd5b506100bc6100d8366004610793565b6102a4565b3480156100e8575f5ffd5b506100bc6100f73660046107c0565b610303565b348015610107575f5ffd5b505f5461011b90600160a01b900460ff1681565b60405190151581526020015b60405180910390f35b34801561013b575f5ffd5b5061014560015481565b604051908152602001610127565b34801561015e575f5ffd5b505f54610171906001600160a01b031681565b6040516001600160a01b039091168152602001610127565b348015610194575f5ffd5b506101a86101a33660046107f1565b61038b565b604051610127929190610847565b6101c96101c4366004610869565b610473565b60405161012791906108ec565b3480156101e1575f5ffd5b5061011b6101f03660046108fe565b60026020525f908152604090205460ff1681565b34801561020f575f5ffd5b506100bc61021e3660046108fe565b6106ee565b5f546001600160a01b0316331461024d576040516330cd747160e01b815260040160405180910390fd5b5f8054821515600160a01b0260ff60a01b199091161790556040517f40db37ff5c0bdc2c427fbb2078c8f24afea940abac0e3c23bb4ea3bf2da2b2129061029990831515815260200190565b60405180910390a150565b5f546001600160a01b031633146102ce576040516330cd747160e01b815260040160405180910390fd5b60018190556040518181527f2c6c01fa295301ed5268e857f846d705c9bd6266d24f9b323552e53a00fc91df90602001610299565b5f546001600160a01b0316331461032d576040516330cd747160e01b815260040160405180910390fd5b6001600160a01b0382165f81815260026020908152604091829020805460ff191685151590811790915591519182527fd79dab7c1ad9be25388690df227462ca1accba2033dbdbd3011ff0eb30c25088910160405180910390a25050565b5f8054606090600160a01b900460ff16156103c65750506040805180820190915260068152651c185d5cd95960d21b60208201525f9061046c565b6001600160a01b0384165f9081526002602052604090205460ff1661041d5750506040805180820190915260188152771d185c99d95d081b9bdd081bdb88185b1b1bddcb5b1a5cdd60421b60208201525f9061046c565b600154831115610458575050604080518082019091526011815270065786365656473207370656e642063617607c1b60208201525f9061046c565b505060408051602081019091525f81526001905b9250929050565b5f546060906001600160a01b031633146104a0576040516330cd747160e01b815260040160405180910390fd5b6003546001146104c35760405163769dd35360e11b815260040160405180910390fd5b60026003555f54600160a01b900460ff161561050f5760405162461bcd60e51b81526020600482015260066024820152651c185d5cd95960d21b60448201526064015b60405180910390fd5b6001600160a01b0385165f9081526002602052604090205460ff166105715760405162461bcd60e51b81526020600482015260186024820152771d185c99d95d081b9bdd081bdb88185b1b1bddcb5b1a5cdd60421b6044820152606401610506565b6001548411156105b75760405162461bcd60e51b8152602060048201526011602482015270065786365656473207370656e642063617607c1b6044820152606401610506565b8334146105f75760405162461bcd60e51b815260206004820152600e60248201526d0ecc2d8eaca40dad2e6dac2e8c6d60931b6044820152606401610506565b5f5f866001600160a01b0316868686604051610614929190610917565b5f6040518083038185875af1925050503d805f811461064e576040519150601f19603f3d011682016040523d82523d5f602084013e610653565b606091505b50915091508161069a5760405162461bcd60e51b81526020600482015260126024820152711d185c99d95d0818d85b1b0819985a5b195960721b6044820152606401610506565b866001600160a01b03167fcaf938de11c367272220bfd1d2baa99ca46665e7bc4d85f00adb51b90fe1fa9f8787876040516106d793929190610926565b60405180910390a260016003559695505050505050565b5f546001600160a01b03163314610718576040516330cd747160e01b815260040160405180910390fd5b5f80546001600160a01b0319166001600160a01b038316908117825560405190917f4ffd725fc4a22075e9ec71c59edf9c38cdeb588a91b24fc5b61388c5be41282b91a250565b8035801515811461076e575f5ffd5b919050565b5f60208284031215610783575f5ffd5b61078c8261075f565b9392505050565b5f602082840312156107a3575f5ffd5b5035919050565b80356001600160a01b038116811461076e575f5ffd5b5f5f604083850312156107d1575f5ffd5b6107da836107aa565b91506107e86020840161075f565b90509250929050565b5f5f60408385031215610802575f5ffd5b61080b836107aa565b946020939093013593505050565b5f81518084528060208401602086015e5f602082860101526020601f19601f83011685010191505092915050565b8215158152604060208201525f6108616040830184610819565b949350505050565b5f5f5f5f6060858703121561087c575f5ffd5b610885856107aa565b935060208501359250604085013567ffffffffffffffff8111156108a7575f5ffd5b8501601f810187136108b7575f5ffd5b803567ffffffffffffffff8111156108cd575f5ffd5b8760208284010111156108de575f5ffd5b949793965060200194505050565b602081525f61078c6020830184610819565b5f6020828403121561090e575f5ffd5b61078c826107aa565b818382375f9101908152919050565b83815260406020820152816040820152818360608301375f818301606090810191909152601f909201601f191601019291505056fea2646970667358221220134518021f03b8750434f083a6b1cbfe088f9270efddbbee4316b7d4e9d92bc264736f6c634300081e0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/PolicyGuard.sol",
+  "devdoc": {
+    "details": "The agent (operator) is the owner. It pre-flights any action with the         `check` view, then calls `execute` to perform it. The contract is the         enforcement point, not the agent.",
+    "kind": "dev",
+    "methods": {
+      "check(address,uint256)": {
+        "returns": {
+          "ok": "     true if the action would be permitted right now",
+          "reason": " human-readable explanation (empty string when ok)"
+        }
+      },
+      "execute(address,uint256,bytes)": {
+        "details": "Reverts identify which policy blocked the action, so a denied         attempt is still a legible on-chain event."
+      }
+    },
+    "title": "PolicyGuard",
+    "version": 1
+  },
+  "evm": {
+    "gasEstimates": {
+      "creation": {
+        "codeDepositCost": "489800",
+        "executionCost": "infinite",
+        "totalCost": "infinite"
+      },
+      "external": {
+        "allowed(address)": "2583",
+        "check(address,uint256)": "infinite",
+        "execute(address,uint256,bytes)": "infinite",
+        "owner()": "2335",
+        "paused()": "2381",
+        "setAllowed(address,bool)": "infinite",
+        "setPaused(bool)": "27766",
+        "setSpendCap(uint256)": "25561",
+        "spendCap()": "2383",
+        "transferOwnership(address)": "27931"
+      }
+    }
+  },
+  "metadata": "{\"compiler\":{\"version\":\"0.8.30+commit.73712a01\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_spendCap\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"NotOwner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Reentrant\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"Executed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnerUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"paused\",\"type\":\"bool\"}],\"name\":\"PausedSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cap\",\"type\":\"uint256\"}],\"name\":\"SpendCapSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"allowed\",\"type\":\"bool\"}],\"name\":\"TargetSet\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"allowed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"check\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"ok\",\"type\":\"bool\"},{\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"execute\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"ok\",\"type\":\"bool\"}],\"name\":\"setAllowed\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"p\",\"type\":\"bool\"}],\"name\":\"setPaused\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"cap\",\"type\":\"uint256\"}],\"name\":\"setSpendCap\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"spendCap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"details\":\"The agent (operator) is the owner. It pre-flights any action with the         `check` view, then calls `execute` to perform it. The contract is the         enforcement point, not the agent.\",\"kind\":\"dev\",\"methods\":{\"check(address,uint256)\":{\"returns\":{\"ok\":\"     true if the action would be permitted right now\",\"reason\":\" human-readable explanation (empty string when ok)\"}},\"execute(address,uint256,bytes)\":{\"details\":\"Reverts identify which policy blocked the action, so a denied         attempt is still a legible on-chain event.\"}},\"title\":\"PolicyGuard\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"check(address,uint256)\":{\"notice\":\"Returns the policy verdict for a proposed action without doing it.\"},\"execute(address,uint256,bytes)\":{\"notice\":\"Executes a proposed action only if it passes every policy.         The caller forwards the native value with the call (msg.value).\"}},\"notice\":\"On-chain guardrail for an autonomous agent. Every action the agent         takes must route through `execute`, which enforces three policies         on-chain so they cannot be bypassed off-chain:           1. Allow-list \\u2014 the target address must be explicitly permitted           2. Spend cap  \\u2014 the native value of a single action is bounded           3. Pause      \\u2014 the operator can halt all actions instantly\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project/contracts/PolicyGuard.sol\":\"PolicyGuard\"},\"evmVersion\":\"prague\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project/contracts/PolicyGuard.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.20;\\n\\n/**\\n * @title PolicyGuard\\n * @notice On-chain guardrail for an autonomous agent. Every action the agent\\n *         takes must route through `execute`, which enforces three policies\\n *         on-chain so they cannot be bypassed off-chain:\\n *           1. Allow-list \\u2014 the target address must be explicitly permitted\\n *           2. Spend cap  \\u2014 the native value of a single action is bounded\\n *           3. Pause      \\u2014 the operator can halt all actions instantly\\n * @dev    The agent (operator) is the owner. It pre-flights any action with the\\n *         `check` view, then calls `execute` to perform it. The contract is the\\n *         enforcement point, not the agent.\\n */\\ncontract PolicyGuard {\\n    address public owner;\\n    bool public paused;\\n    uint256 public spendCap;                  // max native value (wei) per action\\n    mapping(address => bool) public allowed;  // permitted target addresses\\n\\n    uint256 private _lock = 1;                 // minimal reentrancy guard\\n\\n    event OwnerUpdated(address indexed newOwner);\\n    event PausedSet(bool paused);\\n    event SpendCapSet(uint256 cap);\\n    event TargetSet(address indexed target, bool allowed);\\n    event Executed(address indexed target, uint256 value, bytes data);\\n\\n    error NotOwner();\\n    error Reentrant();\\n\\n    modifier onlyOwner() {\\n        if (msg.sender != owner) revert NotOwner();\\n        _;\\n    }\\n\\n    modifier nonReentrant() {\\n        if (_lock != 1) revert Reentrant();\\n        _lock = 2;\\n        _;\\n        _lock = 1;\\n    }\\n\\n    constructor(uint256 _spendCap) {\\n        owner = msg.sender;\\n        spendCap = _spendCap;\\n        emit OwnerUpdated(msg.sender);\\n        emit SpendCapSet(_spendCap);\\n    }\\n\\n    // --- policy administration (operator only) ---\\n\\n    function setAllowed(address target, bool ok) external onlyOwner {\\n        allowed[target] = ok;\\n        emit TargetSet(target, ok);\\n    }\\n\\n    function setSpendCap(uint256 cap) external onlyOwner {\\n        spendCap = cap;\\n        emit SpendCapSet(cap);\\n    }\\n\\n    function setPaused(bool p) external onlyOwner {\\n        paused = p;\\n        emit PausedSet(p);\\n    }\\n\\n    function transferOwnership(address newOwner) external onlyOwner {\\n        owner = newOwner;\\n        emit OwnerUpdated(newOwner);\\n    }\\n\\n    // --- policy decision (read-only pre-flight for the agent loop) ---\\n\\n    /**\\n     * @notice Returns the policy verdict for a proposed action without doing it.\\n     * @return ok      true if the action would be permitted right now\\n     * @return reason  human-readable explanation (empty string when ok)\\n     */\\n    function check(address target, uint256 value)\\n        external\\n        view\\n        returns (bool ok, string memory reason)\\n    {\\n        if (paused) return (false, \\\"paused\\\");\\n        if (!allowed[target]) return (false, \\\"target not on allow-list\\\");\\n        if (value > spendCap) return (false, \\\"exceeds spend cap\\\");\\n        return (true, \\\"\\\");\\n    }\\n\\n    // --- enforced execution (the only way the agent acts) ---\\n\\n    /**\\n     * @notice Executes a proposed action only if it passes every policy.\\n     *         The caller forwards the native value with the call (msg.value).\\n     * @dev    Reverts identify which policy blocked the action, so a denied\\n     *         attempt is still a legible on-chain event.\\n     */\\n    function execute(address target, uint256 value, bytes calldata data)\\n        external\\n        payable\\n        onlyOwner\\n        nonReentrant\\n        returns (bytes memory result)\\n    {\\n        require(!paused, \\\"paused\\\");\\n        require(allowed[target], \\\"target not on allow-list\\\");\\n        require(value <= spendCap, \\\"exceeds spend cap\\\");\\n        require(msg.value == value, \\\"value mismatch\\\");\\n\\n        (bool success, bytes memory ret) = target.call{value: value}(data);\\n        require(success, \\\"target call failed\\\");\\n\\n        emit Executed(target, value, data);\\n        return ret;\\n    }\\n\\n    // accept native funding if you later prefer a treasury model over msg.value forwarding\\n    receive() external payable {}\\n}\\n\",\"keccak256\":\"0xae8839d7b051550e9d22328e55d6d2013ec4f36bd2e1213c8b53f2bf18415522\",\"license\":\"MIT\"}},\"version\":1}",
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 4,
+        "contract": "project/contracts/PolicyGuard.sol:PolicyGuard",
+        "label": "owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 6,
+        "contract": "project/contracts/PolicyGuard.sol:PolicyGuard",
+        "label": "paused",
+        "offset": 20,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 8,
+        "contract": "project/contracts/PolicyGuard.sol:PolicyGuard",
+        "label": "spendCap",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 12,
+        "contract": "project/contracts/PolicyGuard.sol:PolicyGuard",
+        "label": "allowed",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 15,
+        "contract": "project/contracts/PolicyGuard.sol:PolicyGuard",
+        "label": "_lock",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "check(address,uint256)": {
+        "notice": "Returns the policy verdict for a proposed action without doing it."
+      },
+      "execute(address,uint256,bytes)": {
+        "notice": "Executes a proposed action only if it passes every policy.         The caller forwards the native value with the call (msg.value)."
+      }
+    },
+    "notice": "On-chain guardrail for an autonomous agent. Every action the agent         takes must route through `execute`, which enforces three policies         on-chain so they cannot be bypassed off-chain:           1. Allow-list — the target address must be explicitly permitted           2. Spend cap  — the native value of a single action is bounded           3. Pause      — the operator can halt all actions instantly",
+    "version": 1
+  },
+  "argsData": "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+  "transaction": {
+    "hash": "0xd3aafe1839df81577cf668076a0acb31163e0d219f2f1c8be63dd2964741bb19",
+    "nonce": "0x1",
+    "origin": "0x2591c7e61d1379063b89ff35055a5f491eb3b4b8"
+  },
+  "receipt": {
+    "blockHash": "0x91074b2fc53673efa3abc16956a8f6923b42aa80534132600352d79368e29e93",
+    "blockNumber": "0x6d47e98",
+    "transactionIndex": "0x3"
+  }
+}
