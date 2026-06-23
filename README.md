@@ -2,6 +2,8 @@
 
 **On-chain guardrails for autonomous agents on BNB Chain.** An AI agent can propose any transaction it wants, but it can only ever execute the ones an on-chain policy contract allows. Non-compliant actions are caught before they are ever broadcast.
 
+**Live web app: [https://policyguard-bnb.vercel.app](https://policyguard-bnb.vercel.app)**
+
 Live and verified on BSC testnet. Built for the BNB AI Hack.
 
 ---
@@ -38,6 +40,10 @@ Everything below is on-chain and verifiable. The contract source is readable on 
 The deploy, a policy-set transaction, and a compliant execution are all successful on-chain, clearing the hackathon's two-transaction requirement with margin.
 
 ## How it works
+
+PolicyGuard is a live web app at [https://policyguard-bnb.vercel.app](https://policyguard-bnb.vercel.app). You describe a payment in plain English ("pay 0.02 BNB to vendor"). An LLM turns that into a structured proposal, which is checked against an on-chain policy contract before anything can execute. The model only proposes. The contract, not the AI, makes the allow or deny call. A request that breaks a rule (over the spend cap, or to an address not on the allow-list) is caught before it is ever broadcast, so no funds move and no gas is spent.
+
+Under the hood, every proposal flows through the same on-chain path:
 
 ```
   Agent proposes an action
@@ -87,6 +93,7 @@ One action settled on-chain. Two were stopped before they could ever be sent.
 - **Contract:** Solidity (`^0.8.20`), one focused `PolicyGuard.sol`.
 - **Chain:** BNB Smart Chain testnet (chainId 97).
 - **Framework:** Scaffold-ETH 2 (Next.js, Wagmi, Viem, Hardhat).
+- **Web app:** Next.js App Router frontend with a server-side LLM proposer route (Anthropic), deployed on Vercel.
 - **Agent loop:** TypeScript with viem, standalone and chain-agnostic.
 
 The agent loop talks to the contract through a standard EVM interface, so the same guardrail works for any agent or framework that can call a contract, not just this one.
@@ -107,13 +114,32 @@ yarn deploy --network bscTestnet
 # 4. Run the agent loop against your deployed contract
 cd packages/hardhat
 npx tsx scripts/agentLoop.ts
+
+# 5. Or run the web app (plain-English proposer plus verdict UI)
+cd packages/nextjs
+# add ANTHROPIC_API_KEY to .env.local (read server-side only, never committed)
+yarn start
 ```
 
-All secrets (RPC endpoint, deployer key) live in a gitignored `.env`. The deployer key is stored as an encrypted keystore, never as plaintext.
+All secrets live in gitignored env files: the RPC endpoint and deployer key in `packages/hardhat/.env`, and the Anthropic API key in `packages/nextjs/.env.local`. The deployer key is stored as an encrypted keystore, never as plaintext, and the Anthropic key is read on the server only, so it never reaches the browser.
 
 ## Roadmap
 
-The current build proves the core: an agent constrained by an on-chain policy it cannot escape. The natural next layer is a natural-language proposer, a thin LLM front end that turns plain English into a proposed action and feeds it into the same `check` and `execute` loop. Because the guardrail is on-chain, the proposer can be swapped or upgraded freely without ever weakening the safety boundary.
+The natural-language proposer is built and live, feeding plain English into the same on-chain `check` and `execute` loop. From here:
+
+**Near term.** In-app policy management: add and remove allow-listed payees and adjust the spend cap directly from the UI, plus per-payee limits.
+
+**Mid term.** More policy types, including daily and rolling spend limits, time windows, and an approval step for over-cap requests, plus ERC-20 and stablecoin support alongside native BNB.
+
+**Longer term.** A drop-in module other agent builders can add to their own projects, a security audit, and mainnet deployment.
+
+## Where this could go
+
+The on-chain policy contract is the public good and stays open source and free. A sustainable version would not touch the contract. It would add a hosted layer on top: a dashboard for teams running several agents, monitoring with an exportable audit trail of every allowed and denied action, and policy management at scale. The open core drives adoption, and the hosted management and compliance layer is the part a team would pay for.
+
+## Credits
+
+Built with Claude as the development backbone, directed and verified by the author. Architecture, code, and debugging were done in collaboration with Claude. On-chain actions, deployments, and final verification were performed and checked by a human.
 
 ## License
 
