@@ -26,8 +26,13 @@ const scaffoldConfig = {
   // If you want to use a different RPC for a specific network, you can add it here.
   // The key is the chain ID, and the value is the HTTP RPC URL
   rpcOverrides: {
-    // Example:
-    // [chains.mainnet.id]: "https://mainnet.rpc.buidlguidl.com",
+    // BSC testnet (97): viem's default public seed node (data-seed-prebsc-1-s1)
+    // is dead, so the committed default is a reliable keyless public endpoint
+    // (publicnode). Local dev MAY override this via NEXT_PUBLIC_BSC_TESTNET_RPC_URL
+    // in .env.local (e.g. a personal dRPC URL) — that file is gitignored and is
+    // never part of the committed/deployed build, so no private key ships to the
+    // client. Redundant public fallbacks are added in services/web3/wagmiConfig.
+    [chains.bscTestnet.id]: process.env.NEXT_PUBLIC_BSC_TESTNET_RPC_URL || "https://bsc-testnet.publicnode.com",
   },
   // This is ours WalletConnect's default project ID.
   // You can get your own at https://cloud.walletconnect.com
