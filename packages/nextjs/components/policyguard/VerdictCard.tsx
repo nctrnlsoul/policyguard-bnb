@@ -28,7 +28,7 @@ const CHIP_PALETTE = {
   pass: { ...GREEN, word: "Pass" },
   ok: { ...GREEN, word: "OK" },
   fail: { ...RED, word: "Fail" },
-  idle: { ...NEUTRAL, word: "—" },
+  idle: { ...NEUTRAL, word: "-" },
 } as const;
 
 const Chip = ({ label, state }: { label: string; state: ChipState }) => {
@@ -252,7 +252,7 @@ export const VerdictCard = ({
             </div>
             <div className="text-right min-w-0">
               <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-[#9AA1AC] mb-1">Recipient</div>
-              {target ? <Address address={target} chain={chain} /> : <span className="text-[#9AA1AC]">—</span>}
+              {target ? <Address address={target} chain={chain} /> : <span className="text-[#9AA1AC]">-</span>}
             </div>
           </div>
         )}

@@ -43,6 +43,11 @@ const Home: NextPage = () => {
 
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("0.02");
+  const [nlText, setNlText] = useState("Pay 0.02 BNB to vendor");
+  const [parsing, setParsing] = useState(false);
+  const [parsed, setParsed] = useState<{ address: string; valueBnb: string; label: string; reasoning: string } | null>(
+    null,
+  );
   const [proposed, setProposed] = useState<{ target: string; value: bigint } | null>(null);
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string>();
@@ -114,9 +119,49 @@ const Home: NextPage = () => {
     spendcap: !proposed || spendCap === undefined ? "idle" : proposed.value > spendCap ? "fail" : "pass",
   };
 
-  const amountStr = proposed ? `${fmtAmount(proposed.value)} tBNB` : "—";
+  const amountStr = proposed ? `${fmtAmount(proposed.value)} tBNB` : "-";
 
   // --- handlers ---
+  // Plain-English path: the LLM proposes {address, value}; the result still
+  // flows through check() and can be denied. The model never pre-judges policy.
+  const onNlPropose = async () => {
+    const text = nlText.trim();
+    if (!text) {
+      notification.error("Describe a payment first");
+      return;
+    }
+    setParsing(true);
+    setParsed(null);
+    setProposed(null);
+    setExecuted(false);
+    setTxHash(undefined);
+    try {
+      const res = await fetch("/api/propose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        notification.error(data?.error ?? "Could not parse the request");
+        return;
+      }
+      let value: bigint;
+      try {
+        value = parseEther(data.valueBnb);
+      } catch {
+        notification.error("The agent returned an invalid amount");
+        return;
+      }
+      setParsed({ address: data.address, valueBnb: data.valueBnb, label: data.label, reasoning: data.reasoning });
+      setProposed({ target: data.address, value });
+    } catch {
+      notification.error("Network error reaching the agent");
+    } finally {
+      setParsing(false);
+    }
+  };
+
   const onPropose = () => {
     if (!isAddress(recipient)) {
       notification.error("Enter a valid recipient address");
@@ -129,6 +174,7 @@ const Home: NextPage = () => {
       notification.error("Enter a valid amount");
       return;
     }
+    setParsed(null);
     setExecuted(false);
     setTxHash(undefined);
     setProposed({ target: recipient, value });
@@ -151,16 +197,19 @@ const Home: NextPage = () => {
     }
   };
 
+  // Presets fill the plain-English bar with a phrase that exercises each rule.
+  // The LLM still parses it and the contract still judges it.
   const onScenario = (name: string) => {
-    if (name === "approved") setAmount("0.02");
-    else if (name === "cap") setAmount(spendCap ? (Number(formatEther(spendCap)) + 1).toString() : "2");
-    else if (name === "allow") {
-      setAmount("0.1");
-      setRecipient(DEAD);
-    }
+    if (name === "approved") setNlText("Pay 0.02 BNB to vendor");
+    else if (name === "cap") setNlText("Pay 2 BNB to vendor");
+    else if (name === "allow") setNlText(`Pay 0.1 BNB to ${DEAD}`);
     setActiveScenario(name);
   };
 
+  const editNlText = (v: string) => {
+    setNlText(v);
+    setActiveScenario(null);
+  };
   const editRecipient = (v: string) => {
     setRecipient(v);
     setActiveScenario(null);
@@ -254,6 +303,10 @@ const Home: NextPage = () => {
       </div>
 
       <ProposeBar
+        nlText={nlText}
+        onNlText={editNlText}
+        onNlPropose={onNlPropose}
+        parsing={parsing}
         recipient={recipient}
         onRecipient={editRecipient}
         amount={amount}
@@ -264,6 +317,25 @@ const Home: NextPage = () => {
         activeScenario={activeScenario}
         onScenario={onScenario}
       />
+
+      {parsed && (
+        <div className="w-full max-w-[680px] mt-5 bg-white border border-[#E2E5EA] rounded-[14px] px-4 py-3 shadow-[0_2px_10px_rgba(16,20,28,0.04)]">
+          <div className="text-[10.5px] font-semibold tracking-[0.05em] uppercase text-[#9AA1AC] mb-[5px]">
+            Agent proposed
+          </div>
+          <div className="text-[14.5px] font-medium text-[#11151C] leading-[1.45]">
+            Pay <span className="font-bold">{parsed.valueBnb} tBNB</span> to{" "}
+            {parsed.label ? <span className="font-bold">{parsed.label} </span> : null}
+            <span className="font-mono text-[13px] text-[#5B626D]">{shortHash(parsed.address)}</span>
+          </div>
+          {parsed.reasoning && (
+            <div className="mt-1 text-[12.5px] text-[#9AA1AC] leading-[1.5]">{parsed.reasoning}</div>
+          )}
+          <div className="mt-2 text-[11.5px] text-[#9AA1AC] leading-[1.5]">
+            The agent proposed this. PolicyGuard, not the model, makes the allow/deny call below.
+          </div>
+        </div>
+      )}
 
       <VerdictCard
         verdict={verdict}

@@ -101,7 +101,7 @@ export const ActivityFeed = ({
                       {f.recipient ? (
                         <Address address={f.recipient} chain={chain} size="sm" />
                       ) : (
-                        <span className="text-[14px] font-semibold text-[#2C313A]">—</span>
+                        <span className="text-[14px] font-semibold text-[#2C313A]">-</span>
                       )}
                     </>
                   ) : (
