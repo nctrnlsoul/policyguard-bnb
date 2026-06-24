@@ -1,20 +1,30 @@
 "use client";
 
-import { Address } from "@scaffold-ui/components";
 import type { Chain } from "viem";
 import { ACCENT, GREEN } from "~~/components/policyguard/theme";
+import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 export type FeedRow = {
   id: string;
   variant: "executed" | "policy";
   amountStr?: string; // executed
-  recipient?: string; // executed (target address)
+  recipient?: string; // executed (full target address)
+  txHash?: string; // full transaction hash, for the Tx: link
   title?: string; // policy
   meta: string;
   badge: string;
 };
 
 const POLICY = { dot: ACCENT, text: "#9A7B0A", bg: "#FFFBEB", border: "#F5E6B8" };
+
+// Per-variant hover styling for the identifier links. Literal class strings so
+// Tailwind statically extracts them; tied to the green/yellow row coding.
+const HOVER = {
+  executed: { bg: "hover:bg-[#F1FAF4]", text: "group-hover:text-[#15803D]" },
+  policy: { bg: "hover:bg-[#FFFBEB]", text: "group-hover:text-[#9A7B0A]" },
+};
+
+const short = (h?: string) => (h ? `${h.slice(0, 6)}…${h.slice(-4)}` : "");
 
 const Arrow = () => (
   <span className="text-[#C3C8D0] flex items-center">
@@ -30,6 +40,47 @@ const Arrow = () => (
   </span>
 );
 
+// A labeled identifier (To: / Tx:) rendered as a generous, hoverable hit area
+// that links to the right BscScan page. Falls back to plain text if no link.
+const IdLink = ({
+  label,
+  href,
+  value,
+  hover,
+}: {
+  label: string;
+  href: string;
+  value: string;
+  hover: { bg: string; text: string };
+}) => {
+  const inner = (
+    <>
+      <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#9AA1AC]">{label}</span>
+      <span
+        className={`font-mono text-[12.5px] font-semibold text-[#2C313A] underline-offset-2 group-hover:underline ${hover.text}`}
+      >
+        {short(value)}
+      </span>
+    </>
+  );
+
+  if (!href) {
+    return <span className="inline-flex items-center gap-[5px] px-2 py-[5px]">{inner}</span>;
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={value}
+      className={`group inline-flex items-center gap-[5px] -mx-1 px-2 py-[5px] rounded-[9px] transition-colors ${hover.bg}`}
+    >
+      {inner}
+    </a>
+  );
+};
+
 export const ActivityFeed = ({
   rows,
   count,
@@ -41,6 +92,9 @@ export const ActivityFeed = ({
   loading: boolean;
   chain: Chain;
 }) => {
+  const explorer = chain.blockExplorers?.default?.url;
+  const addressLink = (addr?: string) => (explorer && addr ? `${explorer}/address/${addr}` : "");
+
   return (
     <div className="w-full max-w-[680px] mt-[34px]">
       <div className="flex items-center justify-between px-1 pb-3">
@@ -59,6 +113,8 @@ export const ActivityFeed = ({
 
         {rows.map((f, i) => {
           const c = f.variant === "executed" ? GREEN : POLICY;
+          const hover = f.variant === "executed" ? HOVER.executed : HOVER.policy;
+          const txUrl = f.txHash ? getBlockExplorerTxLink(chain.id, f.txHash) : "";
           return (
             <div
               key={f.id}
@@ -93,13 +149,13 @@ export const ActivityFeed = ({
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {f.variant === "executed" ? (
                     <>
                       <span className="text-[14.5px] font-bold tabular-nums tracking-[-0.01em]">{f.amountStr}</span>
                       <Arrow />
                       {f.recipient ? (
-                        <Address address={f.recipient} chain={chain} size="sm" />
+                        <IdLink label="To" href={addressLink(f.recipient)} value={f.recipient} hover={hover} />
                       ) : (
                         <span className="text-[14px] font-semibold text-[#2C313A]">-</span>
                       )}
@@ -108,7 +164,10 @@ export const ActivityFeed = ({
                     <span className="text-[14px] font-semibold text-[#2C313A]">{f.title}</span>
                   )}
                 </div>
-                <div className="mt-[2px] text-[12px] text-[#9AA1AC]">{f.meta}</div>
+                <div className="mt-[2px] flex items-center gap-1 flex-wrap">
+                  <span className="text-[12px] text-[#9AA1AC]">{f.meta}</span>
+                  {f.txHash && <IdLink label="Tx" href={txUrl} value={f.txHash} hover={hover} />}
+                </div>
               </div>
 
               <div
