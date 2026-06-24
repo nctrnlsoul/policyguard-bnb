@@ -9,13 +9,11 @@ import { ProposeBar } from "~~/components/policyguard/ProposeBar";
 import { TopBar } from "~~/components/policyguard/TopBar";
 import { type Verdict, VerdictCard } from "~~/components/policyguard/VerdictCard";
 import type { ChipState } from "~~/components/policyguard/theme";
-import { useScaffoldEventHistory, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useActivityFeed } from "~~/components/policyguard/useActivityFeed";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
-// Block PolicyGuard was deployed on (chain 97). Bounds event history so we
-// don't ask the RPC to scan from genesis.
-const DEPLOY_BLOCK = 114589336n;
 const DEAD = "0x000000000000000000000000000000000000dEaD";
 
 const fmtAmount = (wei: bigint) => {
@@ -73,34 +71,10 @@ const Home: NextPage = () => {
   const { writeContractAsync, isMining } = useScaffoldWriteContract({ contractName: "PolicyGuard" });
 
   // --- on-chain activity ---
-  const executedEv = useScaffoldEventHistory({
-    contractName: "PolicyGuard",
-    eventName: "Executed",
-    fromBlock: DEPLOY_BLOCK,
-    watch: true,
-    blockData: true,
-  });
-  const targetEv = useScaffoldEventHistory({
-    contractName: "PolicyGuard",
-    eventName: "TargetSet",
-    fromBlock: DEPLOY_BLOCK,
-    watch: true,
-    blockData: true,
-  });
-  const pausedEv = useScaffoldEventHistory({
-    contractName: "PolicyGuard",
-    eventName: "PausedSet",
-    fromBlock: DEPLOY_BLOCK,
-    watch: true,
-    blockData: true,
-  });
-  const capEv = useScaffoldEventHistory({
-    contractName: "PolicyGuard",
-    eventName: "SpendCapSet",
-    fromBlock: DEPLOY_BLOCK,
-    watch: true,
-    blockData: true,
-  });
+  // Read from transaction receipts, not eth_getLogs: the contract's events are
+  // ~700k blocks old and no keyless BSC-testnet RPC serves historical getLogs
+  // (see useActivityFeed for the full explanation).
+  const { events: activityEvents, isLoading: feedLoading } = useActivityFeed();
 
   const isOwner = !!connectedAddress && !!owner && connectedAddress.toLowerCase() === owner.toLowerCase();
   const evaluating = !!proposed && checkLoading;
@@ -224,68 +198,61 @@ const Home: NextPage = () => {
     type Raw = { block: bigint; logIndex: number; row: FeedRow };
     const raws: Raw[] = [];
 
-    (executedEv.data ?? []).forEach((e: any) => {
-      raws.push({
-        block: e.blockNumber ?? 0n,
-        logIndex: e.logIndex ?? 0,
-        row: {
-          id: `ex-${e.transactionHash}-${e.logIndex}`,
-          variant: "executed",
-          amountStr: `${fmtAmount(e.args.value as bigint)} tBNB`,
-          recipient: e.args.target as string,
-          meta: `Executed · ${timeAgo(e.blockData?.timestamp)} · ${shortHash(e.transactionHash)}`,
-          badge: "Executed",
-        },
-      });
-    });
+    activityEvents.forEach(e => {
+      const base = { block: e.blockNumber, logIndex: e.logIndex };
+      const id = `${e.transactionHash}-${e.logIndex}`;
 
-    (targetEv.data ?? []).forEach((e: any) => {
-      raws.push({
-        block: e.blockNumber ?? 0n,
-        logIndex: e.logIndex ?? 0,
-        row: {
-          id: `ts-${e.transactionHash}-${e.logIndex}`,
-          variant: "policy",
-          title: `Allow-list ${e.args.allowed ? "added" : "removed"} · ${shortHash(e.args.target as string)}`,
-          meta: `Policy update · ${timeAgo(e.blockData?.timestamp)}`,
-          badge: "Policy",
-        },
-      });
-    });
-
-    (pausedEv.data ?? []).forEach((e: any) => {
-      raws.push({
-        block: e.blockNumber ?? 0n,
-        logIndex: e.logIndex ?? 0,
-        row: {
-          id: `ps-${e.transactionHash}-${e.logIndex}`,
-          variant: "policy",
-          title: e.args.paused ? "Payments paused" : "Payments resumed",
-          meta: `Policy update · ${timeAgo(e.blockData?.timestamp)}`,
-          badge: "Policy",
-        },
-      });
-    });
-
-    (capEv.data ?? []).forEach((e: any) => {
-      raws.push({
-        block: e.blockNumber ?? 0n,
-        logIndex: e.logIndex ?? 0,
-        row: {
-          id: `cap-${e.transactionHash}-${e.logIndex}`,
-          variant: "policy",
-          title: `Spend cap set to ${fmtAmount(e.args.cap as bigint)} tBNB`,
-          meta: `Policy update · ${timeAgo(e.blockData?.timestamp)}`,
-          badge: "Policy",
-        },
-      });
+      if (e.eventName === "Executed") {
+        raws.push({
+          ...base,
+          row: {
+            id,
+            variant: "executed",
+            amountStr: `${fmtAmount(e.args.value as bigint)} tBNB`,
+            recipient: e.args.target as string,
+            meta: `Executed · ${timeAgo(e.timestamp)} · ${shortHash(e.transactionHash)}`,
+            badge: "Executed",
+          },
+        });
+      } else if (e.eventName === "TargetSet") {
+        raws.push({
+          ...base,
+          row: {
+            id,
+            variant: "policy",
+            title: `Allow-list ${e.args.allowed ? "added" : "removed"} · ${shortHash(e.args.target as string)}`,
+            meta: `Policy update · ${timeAgo(e.timestamp)}`,
+            badge: "Policy",
+          },
+        });
+      } else if (e.eventName === "PausedSet") {
+        raws.push({
+          ...base,
+          row: {
+            id,
+            variant: "policy",
+            title: e.args.paused ? "Payments paused" : "Payments resumed",
+            meta: `Policy update · ${timeAgo(e.timestamp)}`,
+            badge: "Policy",
+          },
+        });
+      } else if (e.eventName === "SpendCapSet") {
+        raws.push({
+          ...base,
+          row: {
+            id,
+            variant: "policy",
+            title: `Spend cap set to ${fmtAmount(e.args.cap as bigint)} tBNB`,
+            meta: `Policy update · ${timeAgo(e.timestamp)}`,
+            badge: "Policy",
+          },
+        });
+      }
     });
 
     raws.sort((a, b) => (a.block === b.block ? b.logIndex - a.logIndex : Number(b.block - a.block)));
     return raws.map(r => r.row);
-  }, [executedEv.data, targetEv.data, pausedEv.data, capEv.data]);
-
-  const feedLoading = executedEv.isLoading || targetEv.isLoading || pausedEv.isLoading || capEv.isLoading;
+  }, [activityEvents]);
 
   return (
     <div
