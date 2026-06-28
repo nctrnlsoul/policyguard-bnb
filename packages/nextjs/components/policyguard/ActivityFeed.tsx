@@ -9,6 +9,7 @@ export type FeedRow = {
   variant: "executed" | "policy";
   amountStr?: string; // executed
   recipient?: string; // executed (full target address)
+  recipientLabel?: string; // executed (optional context tag, e.g. "Demo vendor")
   txHash?: string; // full transaction hash, for the Tx: link
   title?: string; // policy
   meta: string;
@@ -97,12 +98,15 @@ export const ActivityFeed = ({
 
   return (
     <div className="w-full max-w-[680px] mt-[34px]">
-      <div className="flex items-center justify-between px-1 pb-3">
+      <div className="flex items-center justify-between px-1 pb-1">
         <h3 className="text-[15px] font-bold tracking-[-0.01em]">Activity</h3>
         <span className="text-[12.5px] font-semibold text-[#9AA1AC]">
-          {loading ? "loading…" : `${count} on-chain event${count === 1 ? "" : "s"}`}
+          {loading ? "loading…" : `${count} verified example${count === 1 ? "" : "s"}`}
         </span>
       </div>
+      <p className="px-1 pb-3 text-[12px] text-[#9AA1AC] leading-[1.5]">
+        Reference transactions from this PolicyGuard contract on BNB testnet.
+      </p>
 
       <div className="bg-white border border-[#E8EAEE] rounded-[18px] overflow-hidden shadow-[0_2px_10px_rgba(16,20,28,0.04)]">
         {rows.length === 0 && !loading && (
@@ -158,6 +162,11 @@ export const ActivityFeed = ({
                         <IdLink label="To" href={addressLink(f.recipient)} value={f.recipient} hover={hover} />
                       ) : (
                         <span className="text-[14px] font-semibold text-[#2C313A]">-</span>
+                      )}
+                      {f.recipientLabel && (
+                        <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#9AA1AC] bg-[#F2F3F5] border border-[#E6E8EC] px-[7px] py-[3px] rounded-full">
+                          {f.recipientLabel}
+                        </span>
                       )}
                     </>
                   ) : (

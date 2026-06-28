@@ -210,6 +210,7 @@ const Home: NextPage = () => {
             variant: "executed",
             amountStr: `${fmtAmount(e.args.value as bigint)} tBNB`,
             recipient: e.args.target as string,
+            recipientLabel: "Demo vendor",
             txHash: e.transactionHash,
             meta: `Executed · ${timeAgo(e.timestamp)}`,
             badge: "Executed",
